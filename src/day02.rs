@@ -8,15 +8,33 @@ fn is_repeating(n: i64) -> bool {
     false
 }
 
+fn nr_digits(mut n: i64) -> usize {
+    if n == 0 {
+        return 1;
+    }
+    let mut res = 0;
+    while n != 0 {
+        n /= 10;
+        res += 1;
+    }
+    res
+}
+
 fn is_repeating_at_least_twice(n: i64) -> bool {
-    let n: Vec<char> = n.to_string().chars().collect();
-    let len = n.len();
-    for i in 2..=len {
-        if len % i == 0 {
-            let mut chunks = n.chunks_exact(len / i);
-            let first = chunks.next().unwrap();
-            if chunks.all(|c| c == first) {
-                return true;
+    let nr_digits = nr_digits(n);
+    for chunk_size in (1..=nr_digits / 2).rev() {
+        if nr_digits % chunk_size == 0 {
+            let mut m = n;
+            let div = 10_i64.pow(chunk_size as u32);
+            let first_chunk = m % div;
+            loop {
+                if first_chunk != m % div {
+                    break; // try next chunk size
+                }
+                m /= div;
+                if m == 0 {
+                    return true;
+                }
             }
         }
     }
