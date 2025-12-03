@@ -2,18 +2,18 @@ fn calc_joltage(s: &str, n: usize) -> i64 {
     let mut sum = 0;
     for l in s.lines() {
         let digits: Vec<i64> = l.chars().map(|c| c.to_digit(10).unwrap().into()).collect();
-        let len = digits.len();
         let mut batteries = vec![];
-        let mut rem = 0;
+        let mut start = 0;
         for i in 0..n {
-            let to_leave = n - i - 1;
-            // using fold instead of max_by_key because I need the first max value, not last
-            let (steps, max) = digits[rem..len - to_leave]
+            let stop = digits.len() - (n - i - 1);
+            // using reduce instead of max_by_key because I need the first max value, not last
+            let (steps, max) = digits[start..stop]
                 .iter()
                 .enumerate()
-                .fold((0, digits[rem]), |acc, (i, d)| if *d > acc.1 { (i, *d) } else { acc });
+                .reduce(|acc, val| if acc.1 >= val.1 { acc } else { val })
+                .unwrap();
             batteries.push(max);
-            rem += steps + 1;
+            start += steps + 1;
         }
         let joltage = batteries
             .iter()
