@@ -14,13 +14,6 @@ fn count_fresh(ranges: &str, ids: &str) -> usize {
 }
 
 // Part 2
-fn range_count(r: &Option<RangeInclusive<i64>>) -> i64 {
-    let Some(r) = r else {
-        return 0;
-    };
-    r.end() - r.start() + 1
-}
-
 fn merge_ranges(r1: &RangeInclusive<i64>, r2: &RangeInclusive<i64>) -> RangeInclusive<i64> {
     let start = cmp::min(r1.start(), r2.start());
     let end = cmp::max(r1.end(), r2.end());
@@ -35,20 +28,19 @@ fn count_fresh_ranges(ranges: &str) -> i64 {
     while merged_ranges {
         merged_ranges = false;
         for i in 0..len {
-            let ri = ranges[i].clone();
-            if ri.is_none() {
+            let Some(ri) = &ranges[i] else {
                 continue;
-            }
-            let ri = ri.unwrap();
+            };
             for j in i + 1..len {
-                let rj = &ranges[j];
-                if rj.is_none() {
+                let Some(rj) = &ranges[j] else {
                     continue;
-                }
-                let rj = rj.clone().unwrap();
-                if ri.contains(rj.start()) || ri.contains(rj.end()) || rj.contains(ri.start()) || rj.contains(ri.end())
-                {
-                    let merged = merge_ranges(&ri, &rj);
+                };
+                let is_overlap = ri.contains(rj.start())
+                    || ri.contains(rj.end())
+                    || rj.contains(ri.start())
+                    || rj.contains(ri.end());
+                if is_overlap {
+                    let merged = merge_ranges(ri, rj);
                     merged_ranges = true;
                     ranges[i] = Some(merged);
                     ranges[j] = None;
@@ -57,7 +49,7 @@ fn count_fresh_ranges(ranges: &str) -> i64 {
             }
         }
     }
-    ranges.iter().map(range_count).sum()
+    ranges.iter().flatten().map(|r| r.end() - r.start() + 1).sum()
 }
 
 pub fn part_1(input: &str) -> i64 {
